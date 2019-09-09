@@ -44,26 +44,18 @@ object Monoid {
   implicit def mapInstance[A, B: Monoid] = new Monoid[Map[A, B]] {
     val empty: Map[A, B]  = Map.empty[A, B]
     def combine(x: Map[A, B], y: Map[A, B]): Map[A, B] = {
-      (x.toList ++ y.toList).foldLeft(Map.empty[A, B]){ case (map, (key, value)) =>
+      (x.toSeq ++ y.toSeq).foldLeft(Map.empty[A, B]){ case (map, (key, value)) =>
         map + (key -> Monoid[B].combine(value, map.get(key).getOrElse(Monoid[B].empty)))
       }
-    }
-  }
-
-  object Ops {
-    implicit class monoidOps[A:Monoid](m: A) {
-      def empty: A = Monoid[A].empty
     }
   }
 }
 
 object Main {
-  import Monoid._
-  import Monoid.Ops._
   import Semigroup.Ops._
 
   def foldMap[A, B: Monoid](as: Seq[A])(fn: A => B): B = {
-    as.map(fn).foldLeft(Monoid[B].empty)(_ |+| _)
+    as.foldLeft(Monoid[B].empty)((b, a) => b |+| fn(a))
   }
 
   def main(args: Array[String]) = {
