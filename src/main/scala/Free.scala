@@ -35,7 +35,7 @@ object FreeMain {
   val program = for {
     data <- Free.liftF(Read("data.txt"))
     _ <- Free.liftF(Write("data1.txt", data ++ "free".getBytes()))
-    _ <- Free.liftF(Delete("data2.txt"))
+    _ <- Free.liftF(Delete("data1.txt"))
   } yield ()
 
   val interpreter = new FunctionK[Disk, IO] {
@@ -49,7 +49,10 @@ object FreeMain {
     }
   }
 
-  def main(args: Array[String]): Unit =
-    program.foldMap(interpreter).run()
+  val compiledProgram = program.foldMap(interpreter)
+
+  def main(args: Array[String]): Unit = {
+    compiledProgram.run()
+  }
 
 }

@@ -1,13 +1,9 @@
 import simulacrum._
 
-@typeclass trait Semigroup[A] {
-  @op("|+|") def combine(x: A, y: A): A
-}
-
-
 @typeclass trait Monoid[A] extends Semigroup[A] {
   def empty: A
 }
+
 
 object MonoidInstances {
   import Semigroup.ops._
@@ -76,7 +72,7 @@ object Main {
   import cats.implicits._
   import OthelloWordCount._
 
-  def foldMa[A, B: cats.Monoid](as: Iterator[A], fn: A => B): B = {
+  def foldMap[A, B: cats.Monoid](as: Iterator[A], fn: A => B): B = {
     as.foldLeft(cats.Monoid[B].empty)((b, a) => b |+| fn(a))
   }
 
@@ -124,7 +120,7 @@ object MainFs2 extends IOApp {
      .foldMonoid
      .map(resultToMessage(_))
      .flatMap(msg => IO(println(msg)))
-      .as(ExitCode.Success)
+     .as(ExitCode.Success)
     
   }
 }
