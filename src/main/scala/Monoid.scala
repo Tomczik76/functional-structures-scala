@@ -4,7 +4,6 @@ import simulacrum._
   def empty: A
 }
 
-
 object MonoidInstances {
   import Semigroup.ops._
 
@@ -12,16 +11,19 @@ object MonoidInstances {
     def empty: Int = 0
     def combine(x: Int, y: Int): Int = x + y
   }
-
+  assert(3 == (1 |+| 2 |+| 3))
   implicit val stringInstance = new Monoid[String] {
     def empty: String = ""
     def combine(x: String, y:String):String = x + y
   }
+  assert("abcedf" == ("ab" |+| "cd" |+| "ef"))
 
   implicit def listInstance[A] = new Monoid[List[A]] {
     def empty: List[A] = Nil
     def combine(x:List[A], y:List[A]) = x ++ y
   }
+  assert(List(1, 2, 3) == (List(1) |+| List(2, 3)))
+
 
   implicit def tuple2Instance[A: Monoid, B: Monoid] = new Monoid[Tuple2[A, B]] {
     val empty:(A, B) = (Monoid[A].empty, Monoid[B].empty)
@@ -29,6 +31,7 @@ object MonoidInstances {
    def combine(x:(A, B), y:(A, B)): (A, B) =
       (x._1 |+| y._1,x._2 |+| y._2)
   }
+  assert((3, "abcd") == ((1, "ab") |+| (2, "cd")))
 
   implicit def tuple3Instance[A: Monoid, B: Monoid, C: Monoid] = new Monoid[Tuple3[A, B, C]] {
     val empty:(A, B, C) = (Monoid[A].empty, Monoid[B].empty, Monoid[C].empty)
@@ -47,6 +50,7 @@ object MonoidInstances {
       }
     }
   }
+  assert(Map("foo" -> 1, "bar" -> 2) == (Map("foo" -> 1, "bar" -> 1) |+| Map("bar" -> 1)))
 }
 
 object OthelloWordCount {
@@ -72,10 +76,10 @@ object Main {
   import cats.implicits._
   import OthelloWordCount._
 
-  def foldMap[A, B: cats.Monoid](as: Iterator[A], fn: A => B): B = {
+  def foldMap[A, B: cats.Monoid](as: Seq[A], fn: A => B): B = {
     as.foldLeft(cats.Monoid[B].empty)((b, a) => b |+| fn(a))
   }
-
+  Nil
   def main(args: Array[String]) = {
     val result =
       io.Source.fromFile("2600-0.txt").getLines
@@ -95,6 +99,7 @@ import cats.effect._
 object MainFs2 extends IOApp {
   import cats._
   import cats.implicits._
+
   import fs2._
   import fs2.io.file.readAll
   import cats.effect.implicits._
@@ -102,24 +107,24 @@ object MainFs2 extends IOApp {
   import scala.concurrent.ExecutionContext.global
   import OthelloWordCount._
 
-  def getFileLines(path:Path): Stream[IO, String] =
-    readAll[IO](path, Blocker.liftExecutionContext(global), 4096)
+  def getFileLines(path:Path) =
+    readAll[cats.effect.IO](path, Blocker.liftExecutionContext(global), 4096)
       .through(text.utf8Decode)
       .through(text.lines)
 
-  def run(args: List[String]):IO[ExitCode] = {
+  def run(args: List[String]):cats.effect.IO[ExitCode] = {
 
     val parallelism = Runtime.getRuntime().availableProcessors()
 
-   readAll[IO](Paths.get("2600-0.txt"), Blocker.liftExecutionContext(global), 4096)
+   readAll[cats.effect.IO](Paths.get("2600-0.txt"), Blocker.liftExecutionContext(global), 4096)
      .through(text.utf8Decode)
      .through(text.lines)
-     .map(line => Stream.emits(toLowerCaseWords(line)).map(toMonoid).covary[IO])
+     .map(line => Stream.emits(toLowerCaseWords(line)).map(toMonoid).covary[cats.effect.IO])
      .parJoin(parallelism)
      .compile
      .foldMonoid
      .map(resultToMessage(_))
-     .flatMap(msg => IO(println(msg)))
+     .flatMap(msg => cats.effect.IO(println(msg)))
      .as(ExitCode.Success)
     
   }

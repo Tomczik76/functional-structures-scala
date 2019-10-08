@@ -10,10 +10,13 @@ object IO {
 
   implicit val ioMonad = new Monad[IO] {
     override def pure[A](a: A): IO[A] = apply(a)
-    override def map[A, B](fa: IO[A], fn: A => B): IO[B] =
+    override def map[A, B](fa: IO[A])(fn: A => B): IO[B] =
       IO(fn(fa.run()))
 
-   override def flatMap[A, B](fa: IO[A], fn: A => IO[B]): IO[B] =
+    override def flatten[A](ffa: IO[IO[A]]): IO[A] =
+    ffa.run()
+
+    def flatMap[A, B](fa: IO[A], fn: A => IO[B]): IO[B] =
       IO(fn(fa.run()).run())
   }
 }

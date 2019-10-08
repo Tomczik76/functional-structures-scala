@@ -18,6 +18,14 @@ object ADTs {
   def left[A, B](a: A): Either[A, B] = Left(a)
   def right[A, B](b: B): Either[A, B] = Right(b)
 
+  sealed trait List[+A]
+  case class Cons[A](head:A, tail:List[A]) extends List[A]
+  case object Nil extends List[Nothing]
+
+  sealed trait Tree[+A]
+  case class Node[A](left:Tree[A], right: Tree[A]) extends Tree[A]
+  case class Leaf[A](value: A) extends Tree[A]
+
   // a + (b + c) = (a + b) + c
   def additveAssocativity[A, B, C](in: Either[A, Either[B, C]]): Either[Either[A, B], C] =
     in match {
@@ -57,7 +65,6 @@ object ADTs {
     case Left(nothing) => ???
     case Right(a) => a
   }
-
   def additiveIdentity[A](a:A): Either[Nothing, A] = Right(a)
 
   // a * (b + c) = a * b + a * c

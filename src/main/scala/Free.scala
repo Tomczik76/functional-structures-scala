@@ -9,7 +9,7 @@ trait Free[F[_], A] {
     case Lift(fa) => fk(fa)
     case Pure(a) => Monad[G].pure(a)
     case FlatMap(f: Free[F, e], fn) =>
-      Monad[G].flatMap(f.foldMap(fk), (a:e) => fn(a).foldMap(fk))
+      Monad[G].flatMap(f.foldMap(fk))((a:e) => fn(a).foldMap(fk))
   }
 }
 
