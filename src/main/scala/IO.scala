@@ -14,7 +14,7 @@ object IO {
       IO(fn(fa.run()))
 
     override def flatten[A](ffa: IO[IO[A]]): IO[A] =
-    ffa.run()
+    IO(ffa.run().run())
 
     def flatMap[A, B](fa: IO[A], fn: A => IO[B]): IO[B] =
       IO(fn(fa.run()).run())
