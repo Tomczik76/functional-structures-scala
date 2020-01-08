@@ -19,6 +19,7 @@ object MonadInstances {
       ffa match {
         case None => None
         case Some(Some(a)) => Some(a)
+        case Some(None) => None
       }
     def pure[A](a: A): Option[A] = Some(a)
   }
@@ -32,4 +33,9 @@ object MonadInstances {
       def pure[A](a: A): List[A] = a :: Nil
   }
 
+  import Id._
+  implicit val idInstance = new Monad[Id] {
+    def flatten[A](a: A): Id[A] = a
+    def pure[A](a:A):Id[A] = a
+  }
 }

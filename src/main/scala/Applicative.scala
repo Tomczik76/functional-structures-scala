@@ -22,7 +22,7 @@ import simulacrum._
 object ApplicativeInstances {
   import Applicative.ops._
 
-  implicit def optionApplicative = new Applicative[Option] {
+  implicit val optionApplicative = new Applicative[Option] {
     def pure[A](a: A): Option[A] = Some(a)
     def map2[A, B, C](fa: Option[A], fb: Option[B])(f: (A, B) => C): Option[C] =
       (fa, fb) match {
@@ -32,27 +32,7 @@ object ApplicativeInstances {
       }
   }
 
-
-  assert(Some(1) == (Option(1) <* Option(2)))
-  assert(Some(2) == (Option(1) *> Option(2)))
-  assert(None == (Option(1) <* None))
-
-  assert(Some("a", 1) == (Option("a").product(Option(1))))
-  assert(None == (Option("a").product(None)))
-
-  val add: Int => Int => Int  =
-     a => b => a + b
-
-  assert(Some(3) == (Option(add) <*> Option(1) <*> Option(2)))   
-
-  assert(None == (Option(add) <*> Option(1) <*> None))
-
-  def addApplicatives[F[_]: Applicative](f1: F[Int], f2: F[Int]): F[Int] =
-   Applicative[F].map2(f1, f2)((a, b) => a + b)
-
-  
-
-  implicit def listApplicative = new Applicative[List] {
+  implicit val listApplicative = new Applicative[List] {
     def pure[A](a: A): List[A] = a :: Nil
     def map2[A, B, C](fa: List[A], fb: List[B])(f: (A, B) => C): List[C] =
       (fa, fb) match {
@@ -61,5 +41,12 @@ object ApplicativeInstances {
         case (head :: tail, list2) =>
           map(list2)(x => f(head, x)) ++ map2(tail, list2)(f)
       }
+  }
+
+  import Id._
+  implicit val idInstance = new Applicative[Id] {
+    def pure[A](a:A):Id[A] = a
+    def map2[A, B, C](id1: Id[A], id2: Id[B])(f: (A, B) => C): Id[C] =
+      f(id1, id2)
   }
 }

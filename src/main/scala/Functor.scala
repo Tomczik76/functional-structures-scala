@@ -35,4 +35,9 @@ object FunctorInstances {
       }
     }
   }
+  import Id._
+  implicit val idInstance = new Functor[Id] {
+    def map[A, B](id: Id[A])(fn: A => B): Id[B] =
+      fn(id)
+  }
 }

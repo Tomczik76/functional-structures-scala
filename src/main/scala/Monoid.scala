@@ -106,7 +106,6 @@ object MainFs2 extends IOApp {
   import java.nio.file._
   import scala.concurrent.ExecutionContext.global
   import OthelloWordCount._
-
   def getFileLines(path:Path) =
     readAll[cats.effect.IO](path, Blocker.liftExecutionContext(global), 4096)
       .through(text.utf8Decode)
